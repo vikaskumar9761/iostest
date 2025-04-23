@@ -1,0 +1,239 @@
+import 'package:flutter/material.dart';
+
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          // Set the background color of the ScrollView to black
+          child: Container(
+            color: Colors.black,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 60),
+                  // Welcome text
+                  const Text(
+                    'Welcome back!',
+                    style: TextStyle(
+                      fontFamily: 'Urbanist',
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Sign In To Your Account',
+                    style: TextStyle(
+                      fontFamily: 'Urbanist',
+                      color: Colors.white70,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  
+                  // App logo
+                  Center(
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: Center(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Container(
+                              width: 60,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                color: Colors.transparent,
+                                border: Border.all(color: Colors.white, width: 2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            const Positioned(
+                              right: 25,
+                              child: Text(
+                                '₹',
+                                style: TextStyle(
+                                  fontFamily: 'Urbanist',
+                                  color: Colors.white,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 60),
+                  
+                  // Phone number input - ensure this has black background
+                  Container(
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      border: Border.all(color: Colors.white70, width: 1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        // Country code
+                        Container(
+                          width: 60,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            color: Colors.black,
+                            border: Border(
+                              right: BorderSide(color: Colors.white70, width: 1),
+                            ),
+                          ),
+                          child: const Text(
+                            '+91',
+                            style: TextStyle(
+                              fontFamily: 'Urbanist',
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        
+                        // Phone number field
+                        Expanded(
+                          
+                          child: Container(
+                            color: Colors.black,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: TextField(
+                                style: const TextStyle(
+                                  fontFamily: 'Urbanist',
+                                  color: Colors.white,
+                                ),
+                                decoration: const InputDecoration(
+                                  hintText: 'Mobile Number',
+                                  hintStyle: TextStyle(
+                                    fontFamily: 'Urbanist',
+                                    color: Colors.grey,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.zero,
+                                  fillColor: Colors.black,
+                                  filled: true,
+                                ),
+                                keyboardType: TextInputType.phone,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Proceed button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1E1E2C),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Proceed',
+                        style: TextStyle(
+                          fontFamily: 'Urbanist',
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Terms and conditions
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(top: 2),
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          size: 16,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: RichText(
+                          text: const TextSpan(
+                            style: TextStyle(
+                              fontFamily: 'Urbanist',
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                            children: [
+                              TextSpan(text: 'By Clicking On Login Button, you agree to\n'),
+                              TextSpan(
+                                text: 'Terms Conditions',
+                                style: TextStyle(
+                                  fontFamily: 'Urbanist',
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              TextSpan(text: ' and '),
+                              TextSpan(
+                                text: 'Privacy Policy',
+                                style: TextStyle(
+                                  fontFamily: 'Urbanist',
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              TextSpan(text: ' Of JustPe Payments'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
