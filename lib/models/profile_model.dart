@@ -33,6 +33,8 @@ class ProfileData {
   final String? aadhar;
   final String phone;
   final String refCode;
+  final String? address;
+  final String? pinCode;
 
   ProfileData({
     required this.id,
@@ -48,21 +50,44 @@ class ProfileData {
     this.aadhar,
     required this.phone,
     required this.refCode,
+    this.address,
+    this.pinCode,
   });
 
   factory ProfileData.fromJson(Map<String, dynamic> json) => ProfileData(
-    id: json['id'] ?? 0,
-    login: json['login'] ?? '',
-    firstName: json['firstName'] ?? '',
-    lastName: json['lastName'] ?? '',
-    email: json['email'] ?? '',
-    imageUrl: json['imageUrl'],
-    activated: json['activated'] ?? false,
-    langKey: json['langKey'] ?? '',
-    balance: (json['balance'] ?? 0.0).toDouble(),
-    pan: json['pan'],
-    aadhar: json['aadhar'],
-    phone: json['phone'] ?? '',
-    refCode: json['refCode'] ?? '',
-  );
+        id: json['id'] ?? 0,
+        login: json['login'] ?? '',
+        firstName: json['firstName'] ?? '',
+        lastName: json['lastName'] ?? '',
+        email: json['email'] ?? '',
+        imageUrl: json['imageUrl'],
+        activated: json['activated'] ?? false,
+        langKey: json['langKey'] ?? '',
+        balance: (json['balance'] ?? 0.0).toDouble(),
+        pan: json['pan'],
+        aadhar: json['aadhar'],
+        phone: json['phone'] ?? '',
+        refCode: json['refCode'] ?? '',
+        address: json['address'],
+        pinCode: json['pinCode'],
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'login': login,
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': email,
+        'imageUrl': imageUrl,
+        'activated': activated,
+        'langKey': langKey,
+        'balance': balance,
+        'pan': pan,
+        'aadhar': aadhar,
+        'phone': phone,
+        'refCode': refCode,
+        'address': address,
+        'pinCode': pinCode,
+      };
+
 }

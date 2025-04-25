@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:iostest/apiservice/api_base_helper.dart';
 import 'package:iostest/config/secure_storage_service.dart';
 import 'package:iostest/config/url_constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/profile_model.dart';
 
 class ProfileProvider extends ChangeNotifier {
@@ -16,36 +19,50 @@ class ProfileProvider extends ChangeNotifier {
   String? get error => _error;
   bool get isUserActivated => _profile?.data.activated ?? false;
 
-  Future<bool> fetchProfile() async {
-    final token = await SecureStorageService.getToken();
+Future<bool> fetchProfile() async {
+  final token = await SecureStorageService.getToken();
 
-    if (token == null) return false;
+  if (token == null) return false;
 
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+  _isLoading = true;
+  _error = null;
+  notifyListeners();
 
-    try {
+  try {
+    final url = UrlConstants.profile;
+    final response = await _apiHelper.getrequest(url);
 
+    if (response['success'] == true && response['code'] == '200') {
+      final profile = ProfileData.fromJson(response['data']);
 
-      final url = UrlConstants.profile;
-      
-            final response = await _apiHelper.getrequest(url);
+      // Save profile data to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('profileData', json.encode(response['data']));
 
-      if (response['success'] == true && response['code'] == '200') {
-                final profile = ProfileData.fromJson(response['data']);
-
-        _isLoading = false;
-        notifyListeners();
-        return profile.login!=null;
-      } else {
-        throw Exception('Failed to load profile');
-      }
-    } catch (e) {
-      _error = e.toString();
       _isLoading = false;
       notifyListeners();
-      return false;
+      return profile.login != null;
+    } else {
+      throw Exception('Failed to load profile');
     }
+  } catch (e) {
+    _error = e.toString();
+    _isLoading = false;
+    notifyListeners();
+    return false;
   }
+}
+
+Future<ProfileData?> getSavedProfile() async {
+  final prefs = await SharedPreferences.getInstance();
+  final profileString = prefs.getString('profileData');
+
+  if (profileString != null) {
+    final profileJson = json.decode(profileString);
+    return ProfileData.fromJson(profileJson);
+  }
+  return null;
+}
+
+
 }
