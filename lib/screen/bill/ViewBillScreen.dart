@@ -40,7 +40,7 @@ class _ViewBillScreenState extends State<ViewBillScreen> {
   void initState() {
     super.initState();
     // Initialize the amount controller with the bill amount
-    _amountController.text = widget.billData['billAmount'] ?? '0.00';
+    _amountController.text = widget.billData['billAmount'].toString() ?? '0.00';
   }
 
   @override

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:iostest/Profile%20Screen/aadhaar_verify_screen.dart';
+import 'package:iostest/Profile%20Screen/pan_verify_screen.dart';
 import 'package:iostest/providers/profile_provider.dart';
 import 'package:iostest/models/profile_model.dart';
 
@@ -31,9 +33,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _addListeners();
   }
 
+  // Load profile data from Provider
   Future<void> _loadProfileData() async {
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
     try {
-      final profile = await Provider.of<ProfileProvider>(context, listen: false).getSavedProfile();
+      final profile = await profileProvider.getSavedProfile();
       if (profile != null) {
         _originalProfileData = profile;
         setState(() {
@@ -64,8 +68,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _addressController.addListener(_checkForChanges);
     _pinCodeController.addListener(_checkForChanges);
     _emailController.addListener(_checkForChanges);
-    _aadharController.addListener(_checkForChanges);
-    _panController.addListener(_checkForChanges);
+    _aadharController.addListener(() {
+      _checkForChanges();
+      setState(() {});
+    });
+    _panController.addListener(() {
+      _checkForChanges();
+      setState(() {});
+    });
   }
 
   void _checkForChanges() {
@@ -82,7 +92,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
- 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,27 +125,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        Expanded(child: _buildTextField(_aadharController, 'Aadhaar Number')),
-                        const SizedBox(width: 8),
-                        TextButton(
-                          onPressed: () {
-                            // Aadhaar verification logic
-                          },
-                          child: const Text('Verify'),
+                        Expanded(
+                          child: _buildTextField(
+                            _aadharController,
+                            'Aadhaar Number',
+                            enabled: _aadharController.text.isEmpty, // Editable if empty
+                          ),
                         ),
+                        const SizedBox(width: 8),
+                        _aadharController.text.isEmpty
+                            ? TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const AadhaarVerifyScreen(),
+                                    ),
+                                  ).then((_) => _loadProfileData());
+                                },
+                                child: const Text('Verify'),
+                              )
+                            : const Icon(Icons.check_circle, color: Colors.green),
                       ],
                     ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        Expanded(child: _buildTextField(_panController, 'PAN Number')),
-                        const SizedBox(width: 8),
-                        TextButton(
-                          onPressed: () {
-                            // PAN verification logic
-                          },
-                          child: const Text('Verify'),
+                        Expanded(
+                          child: _buildTextField(
+                            _panController,
+                            'PAN Number',
+                            enabled: _panController.text.isEmpty, // Editable if empty
+                          ),
                         ),
+                        const SizedBox(width: 8),
+                        _panController.text.isEmpty
+                            ? TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const PanVerifyScreen(),
+                                    ),
+                                  ).then((_) => _loadProfileData());
+                                },
+                                child: const Text('Verify'),
+                              )
+                            : const Icon(Icons.check_circle, color: Colors.green),
                       ],
                     ),
                     const SizedBox(height: 32),
@@ -146,7 +181,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           backgroundColor: _isButtonEnabled ? Colors.black : Colors.grey,
                           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                         ),
-                        onPressed: _isButtonEnabled ? null : null,
+                        onPressed: _isButtonEnabled
+                            ? () async {
+                                final updatedProfile = ProfileData(
+                                  id: _originalProfileData.id,
+                                  login: _originalProfileData.login,
+                                  firstName: _nameController.text.split(' ').first,
+                                  lastName: _nameController.text.split(' ').length > 1
+                                      ? _nameController.text.split(' ').last
+                                      : '',
+                                  email: _emailController.text,
+                                  phone: _phoneController.text,
+                                  address: _addressController.text,
+                                  pinCode: _pinCodeController.text,
+                                  pan: _panController.text,
+                                  aadhar: _aadharController.text,
+                                  imageUrl: _originalProfileData.imageUrl,
+                                  activated: _originalProfileData.activated,
+                                  langKey: _originalProfileData.langKey,
+                                  balance: _originalProfileData.balance,
+                                  refCode: _originalProfileData.refCode,
+                                );
+
+                                final success = await Provider.of<ProfileProvider>(context, listen: false)
+                                    .updateProfile(updatedProfile);
+
+                                if (success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Profile updated successfully')),
+                                  );
+                                  setState(() {
+                                    _isButtonEnabled = false;
+                                    _originalProfileData = updatedProfile;
+                                  });
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Failed to update profile')),
+                                  );
+                                }
+                              }
+                            : null,
                         child: const Text(
                           'UPDATE',
                           style: TextStyle(
@@ -164,9 +238,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, {String? hintText}) {
+  Widget _buildTextField(TextEditingController controller, String label, {String? hintText, bool enabled = true}) {
     return TextField(
       controller: controller,
+      enabled: enabled,
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText,

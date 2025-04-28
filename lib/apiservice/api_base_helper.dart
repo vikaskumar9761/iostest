@@ -8,6 +8,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 
+import 'package:iostest/config/secure_storage_service.dart';
+
 class ApiBaseHelper {
   Future<dynamic> getrequest(String url) async {
     //print('Api get, url $url');
@@ -100,6 +102,30 @@ class ApiBaseHelper {
     }
   }
 
+
+// Function to make a PUT request with token and body update information
+Future<dynamic> putrequest(String url, Map<String, dynamic> body) async {
+  try {
+    final token = await SecureStorageService.getToken();
+
+    final headers = {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+
+    final response = await http.put(
+      Uri.parse(url),
+      headers: headers,
+      body: json.encode(body),
+    );
+
+    return _returnResponse(response);
+  } on SocketException {
+    throw FetchDataException('No Internet connection');
+  } catch (e) {
+    throw Exception('Error in PUT request: $e');
+  }
+}
   
 }
 
