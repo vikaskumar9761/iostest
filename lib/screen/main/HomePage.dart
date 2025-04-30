@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iostest/config/secure_storage_service.dart';
 import 'package:iostest/models/category_service_item.dart';
+import 'package:iostest/screen/Flight%20Book/flight_boking.dart';
 import 'package:iostest/screen/RechargeScreen/MobileRechargeScreen.dart';
 import 'package:iostest/screen/main/MyAccountScreen.dart';
 import 'package:iostest/screen/operator/OperatorSelectionScreen.dart';
@@ -83,7 +84,7 @@ class _HomePageState extends State<HomePage> {
       appBar: _selectedIndex != 2
           ? AppBar(
               title: Text(
-                _selectedIndex == 0 ? 'Services' : 'History',
+                _selectedIndex == 0 ? 'Services' : _selectedIndex == 1 ? 'History' : 'Flight Booking',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               backgroundColor: Colors.white,
@@ -91,33 +92,30 @@ class _HomePageState extends State<HomePage> {
               elevation: 1,
             )
           : null,
-      body: SingleChildScrollView(
-        child: Container(
-          width: double.infinity,
-          constraints: BoxConstraints(
-            minHeight: MediaQuery.of(context).size.height,
-          ),
-          child: Column(
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          // Services Screen
+          Column(
             children: [
-              if (_selectedIndex == 0)
-                HeaderComponent(userName: userName, balance: balance),
-
-              if (_selectedIndex == 0)
-                _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _services.isEmpty
-                        ? const Center(child: Text('No services available'))
-                        : ServicesGrid(
-                            services: _services,
-                            onServiceTap: _handleServiceTap,
-                          ),
-
-              if (_selectedIndex == 1) const HistoryComponent(),
-
-              if (_selectedIndex == 2) const MyAccountScreen(),
+              HeaderComponent(userName: userName, balance: balance),
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _services.isEmpty
+                      ? const Center(child: Text('No services available'))
+                      : ServicesGrid(
+                          services: _services,
+                          onServiceTap: _handleServiceTap,
+                        ),
             ],
           ),
-        ),
+          // History Screen
+          const HistoryComponent(),
+          // My Account Screen
+          const MyAccountScreen(),
+          // Flight Booking Screen
+          const FlightBookingScreen(),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -133,10 +131,19 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.person),
             label: 'Profile',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.flight_takeoff),
+            label: 'Flight Booking',
+          ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.grey[800],
-        onTap: (index) => setState(() => _selectedIndex = index),
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
       ),
     );
   }
