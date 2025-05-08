@@ -3,7 +3,6 @@ import 'package:iostest/models/config_model.dart';
 import 'package:iostest/models/plans_model.dart';
 import 'package:iostest/providers/bill_notifier.dart';
 import 'package:iostest/providers/plans_provider.dart';
-import 'package:iostest/screen/PaymentScreen/payment_screen.dart';
 import 'package:iostest/screen/bill/ViewBillScreen.dart';
 import 'package:iostest/utils/config_util.dart';
 import 'package:provider/provider.dart';

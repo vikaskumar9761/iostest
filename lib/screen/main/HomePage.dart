@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:iostest/config/secure_storage_service.dart';
 import 'package:iostest/models/category_service_item.dart';
 import 'package:iostest/screen/Flight%20Book/flight_boking.dart';
+import 'package:iostest/screen/Gold%20Sip/gold_screen.dart';
+import 'package:iostest/screen/Hotel%20Screens/hotel_screen.dart';
 import 'package:iostest/screen/RechargeScreen/MobileRechargeScreen.dart';
 import 'package:iostest/screen/main/MyAccountScreen.dart';
+import 'package:iostest/screen/main/more_services_component.dart';
 import 'package:iostest/screen/operator/OperatorSelectionScreen.dart';
 import 'package:iostest/utils/config_util.dart';
 import 'package:iostest/widgets/services_grid.dart';
@@ -84,7 +87,13 @@ class _HomePageState extends State<HomePage> {
       appBar: _selectedIndex != 2
           ? AppBar(
               title: Text(
-                _selectedIndex == 0 ? 'Services' : _selectedIndex == 1 ? 'History' : 'Flight Booking',
+                _selectedIndex == 0
+                    ? 'Services'
+                    : _selectedIndex == 1
+                        ? 'History'
+                        : _selectedIndex == 2
+                            ? 'Profile'
+                            : 'Flight Booking',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               backgroundColor: Colors.white,
@@ -96,18 +105,227 @@ class _HomePageState extends State<HomePage> {
         index: _selectedIndex,
         children: [
           // Services Screen
-          Column(
-            children: [
-              HeaderComponent(userName: userName, balance: balance),
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _services.isEmpty
-                      ? const Center(child: Text('No services available'))
-                      : ServicesGrid(
-                          services: _services,
-                          onServiceTap: _handleServiceTap,
+          SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                HeaderComponent(userName: userName, balance: balance),
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _services.isEmpty
+                        ? const Center(child: Text('No services available'))
+                        : ServicesGrid(
+                            services: _services,
+                            onServiceTap: _handleServiceTap,
+                          ),
+                const Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Color(0xFFEBEBF2),
+                ),
+                const SizedBox(height: 5),
+
+
+
+
+ // Sip Gold Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 4.0),
+                  child: Text(
+                    "Wealth",
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
-            ],
+                  ),
+                ),
+   GridView.count(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  children: [
+                    MoreServicesComponent(
+                      image: "https://cdn-icons-png.flaticon.com/128/9210/9210106.png",
+                      label: 'Gold',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const GoldScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                      MoreServicesComponent(
+                      image: "https://cdn-icons-png.flaticon.com/128/15014/15014319.png",
+                      label: 'Gold SIP',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FlightBookingScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+               
+                 const Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Color(0xFFEBEBF2),
+                ),
+                const SizedBox(height: 5),
+
+
+
+
+ // Travel Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 4.0),
+                  child: Text(
+                    "Travel",
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+                GridView.count(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  children: [
+                    MoreServicesComponent(
+                      image: "https://cdn-icons-png.flaticon.com/128/1085/1085493.png",
+                      label: 'Flights',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FlightBookingScreen(),
+                          ),
+                        );
+                      },
+                    ),
+
+                    MoreServicesComponent(
+                      image: "https://cdn-icons-png.flaticon.com/512/4707/4707600.png",
+                      label: 'Bus',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FlightBookingScreen(),
+                          ),
+                        );
+                      },
+                    ),
+
+                    MoreServicesComponent(
+                      image: "https://cdn-icons-png.flaticon.com/128/4320/4320277.png",
+                      label: 'Hotel',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HotelSearchScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                const Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Color(0xFFEBEBF2),
+                ),
+
+                
+
+ //Shopping Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 4.0),
+                  child: Text(
+                    "Shopping",
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+   GridView.count(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  children: [
+                    MoreServicesComponent(
+                      image: "https://cdn-icons-png.flaticon.com/128/9674/9674658.png",
+                      label: 'Sopping',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FlightBookingScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                      MoreServicesComponent(
+                      image: "https://cdn-icons-png.flaticon.com/128/2777/2777142.png",
+                      label: 'Electronics',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FlightBookingScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                        MoreServicesComponent(
+                      image: "https://cdn-icons-png.flaticon.com/512/1261/1261089.png",
+                      label: 'Grocery',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FlightBookingScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+               
+                 const Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Color(0xFFEBEBF2),
+                ),
+                const SizedBox(height: 5),
+
+
+
+              ],
+            ),
           ),
           // History Screen
           const HistoryComponent(),
@@ -132,7 +350,7 @@ class _HomePageState extends State<HomePage> {
             label: 'Profile',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.flight_takeoff),
+            icon: Icon(Icons.flight),
             label: 'Flight Booking',
           ),
         ],

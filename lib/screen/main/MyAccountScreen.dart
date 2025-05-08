@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:iostest/screen/Profile%20Screen/profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:iostest/providers/profile_provider.dart';
-import 'package:iostest/models/profile_model.dart';
 
 class MyAccountScreen extends StatefulWidget {
   const MyAccountScreen({super.key});
