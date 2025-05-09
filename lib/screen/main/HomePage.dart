@@ -332,7 +332,6 @@ class _HomePageState extends State<HomePage> {
           // My Account Screen
           const MyAccountScreen(),
           // Flight Booking Screen
-          const FlightBookingScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -349,10 +348,7 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.person),
             label: 'Profile',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.flight),
-            label: 'Flight Booking',
-          ),
+         
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.grey[800],

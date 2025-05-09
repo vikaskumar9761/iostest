@@ -44,16 +44,4 @@ class GoldPriceProvider extends ChangeNotifier {
     }
   }
 
-  void startAutoRefresh() {
-    _refreshTimer?.cancel();
-    _refreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
-      fetchGoldPrice();
-    });
-  }
-
-  @override
-  void dispose() {
-    _refreshTimer?.cancel();
-    super.dispose();
-  }
 }

@@ -29,11 +29,11 @@ class GoldProfileProvider extends ChangeNotifier {
       );
 
      print('Response status code: ${response.statusCode}');
-     print('Response body: ${response.body}');
+     print('Response body: ❤️ ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-       // print('Parsed data: $data');
+      // print('Parsed data: $data');
 
         _goldProfile = GoldProfileResponse.fromJson(data);
        // print('Gold Profile: ${_goldProfile!.data.mmtcBal}, ${_goldProfile!.data.safegoldBal}');
