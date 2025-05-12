@@ -4,6 +4,8 @@ import 'package:iostest/providers/PaymentNotifier.dart';
 import 'package:iostest/providers/bill_notifier.dart';
 import 'package:iostest/providers/config_provider.dart';
 import 'package:iostest/providers/gold_profile_provider.dart';
+import 'package:iostest/providers/hotel_city_provider.dart';
+import 'package:iostest/providers/hotels_list_provider.dart';
 import 'package:iostest/providers/otp_provider.dart';
 import 'package:iostest/providers/payment_status_notifier.dart';
 import 'package:iostest/providers/profile_provider.dart';
@@ -28,6 +30,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => PaymentStatusNotifier()),
         ChangeNotifierProvider(create: (_) => GoldProfileProvider()),
         ChangeNotifierProvider(create: (_) => GoldPriceProvider()),
+         ChangeNotifierProvider(create: (_) => HotelCityProvider()),
+          ChangeNotifierProvider(create: (_) => HotelsListProvider()),
       ],
       child: const MyApp(),
     ),

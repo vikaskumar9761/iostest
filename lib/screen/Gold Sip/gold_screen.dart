@@ -35,9 +35,9 @@ class _GoldScreenState extends State<GoldScreen> {
       _fetchGoldBuyPrice();
 
       // Uncomment below to enable auto-refresh
-      // _refreshTimer = Timer.periodic(const Duration(minutes: 2), (timer) {
-      //   _fetchGoldBuyPrice();
-      // });
+      _refreshTimer = Timer.periodic(const Duration(minutes: 5), (timer) {
+        _fetchGoldBuyPrice();
+      });
     });
   }
 
