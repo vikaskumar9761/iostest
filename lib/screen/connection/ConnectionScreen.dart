@@ -9,6 +9,7 @@ class ConnectionScreen extends StatefulWidget {
   final String operatorId;
   final String category;
   final String selectedCircleName;
+  final String selectedCircleId;
   final String number;
   final Map<String, dynamic> billerObject;
 
@@ -18,6 +19,7 @@ class ConnectionScreen extends StatefulWidget {
     required this.operatorName,
     required this.operatorId,
     required this.selectedCircleName,
+    required this.selectedCircleId,
     required this.category,
     required this.billerObject,
   });
@@ -109,6 +111,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
             operatorName: widget.operatorName,
             number: widget.number,
             operatorId: widget.operatorId,
+           selectedCircleId: widget.selectedCircleId,
             category: widget.category,
             billData: {
               'billAmount': billData['billAmount'] ?? 0.0,

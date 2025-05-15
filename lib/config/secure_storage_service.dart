@@ -32,6 +32,8 @@ class SecureStorageService {
     return await _storage.read(key: _tokenKey);
   }
 
+  
+
   // Get user data
   static Future<Map<String, dynamic>?> getUser() async {
     final userStr = await _storage.read(key: _userKey);
@@ -40,9 +42,6 @@ class SecureStorageService {
     }
     return null;
   }
-
-
-
 
    static Future<void> saveConfig(ConfigModel config) async {
     await _storage.write(
@@ -71,4 +70,6 @@ class SecureStorageService {
   static Future<void> clearAll() async {
     await _storage.deleteAll();
   }
+
+  
 }

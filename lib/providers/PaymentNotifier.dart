@@ -20,6 +20,7 @@ class PaymentNotifier extends ChangeNotifier {
     required String category,
     required String consumerNumber,
     required String operatorId,
+    required String selectedCircleId,
     required List<String> paymentMethods,
     required Map<String, dynamic> adParams,
   }) async {
@@ -44,21 +45,22 @@ class PaymentNotifier extends ChangeNotifier {
         "adParams": adParams,
         "amt": amount,
         "category": category,
-        "cir": "",
+        "cir": selectedCircleId,
         "cn": consumerNumber,
         "op": operatorId,
-        "txnType": txnType
+        "txnType": txnType,
       };
 
       // Convert body to JSON string
       final String jsonBody = json.encode(requestBody);
+      print('Request Body: $jsonBody');
 
       // Make API call using ApiBaseHelper
       final response = await _apiHelper.postrequest(
         '${UrlConstants.baseUrl}/recharge/validate/mobile/v3/temp',
         jsonBody,
       );
-print(response);
+      print(response);
 
       _isLoading = false;
 
@@ -88,4 +90,3 @@ print(response);
     notifyListeners();
   }
 }
-

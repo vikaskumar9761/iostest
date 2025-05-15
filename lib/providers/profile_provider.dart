@@ -17,6 +17,12 @@ class ProfileProvider extends ChangeNotifier {
   String? get error => _error;
   bool get isUserActivated => _profile?.data.activated ?? false;
 
+
+  void logout() {
+    _profile = null;
+    _error = null;
+    notifyListeners();
+  }
   /// Fetch profile data from API and store it in SharedPreferences
   Future<bool> fetchProfile() async {
     final token = await SecureStorageService.getToken();

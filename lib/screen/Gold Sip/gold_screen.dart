@@ -77,9 +77,10 @@ class _GoldScreenState extends State<GoldScreen> {
     final selectedData = _goldGroupedData[_selectedTimeRange];
     if (selectedData != null && selectedData.isNotEmpty) {
       final reversedData = selectedData.reversed.toList();
-      _chartData = reversedData.asMap().entries.map((entry) {
-        return FlSpot(entry.key.toDouble(), entry.value.rate.toDouble());
-      }).toList();
+      _chartData =
+          reversedData.asMap().entries.map((entry) {
+            return FlSpot(entry.key.toDouble(), entry.value.rate.toDouble());
+          }).toList();
     } else {
       _chartData = [];
     }
@@ -92,54 +93,15 @@ class _GoldScreenState extends State<GoldScreen> {
       await provider.fetchGoldPrice();
       final goldData = provider.goldData;
       if (goldData != null) {
-        setState(() => _goldPrice = goldData.price.priceWithGst);
-        print("✅ Gold price fetched: ₹${goldData.price.priceWithGst}");
+        setState(() => _goldPrice = goldData.price.currentPrice);
+        print("✅ Gold price fetched: ₹${goldData.price.currentPrice}");
       }
     } catch (e) {
       print("❌ Error fetching gold buy price: $e");
     }
   }
 
-  /// Navigates to BuyGoldScreen if price is available
-  void _navigateToBuyGoldScreen(BuildContext context) {
-    if (_goldPrice != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => BuyGoldScreen(goldPrice: _goldPrice!),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Gold price is not available")),
-      );
-    }
-  }
-
-  /// Shows onboarding dialog for SafeGold users
-  void _showOnboardingDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("MMTC Gold Onboarding"),
-        content: const Text("We need to onboard you to proceed with the gold purchase. Would you like to continue?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("CANCEL"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _navigateToBuyGoldScreen(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-            child: const Text("PROCEED", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -147,58 +109,92 @@ class _GoldScreenState extends State<GoldScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Gold in Locker")),
-      body: profileProvider.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  // 🔐 Locker Info Card
-                  Container(
-                    color: Colors.black,
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("Gold in Locker",
-                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        Text("MMTC Balance: ${profileProvider.goldProfile?.data.mmtcBal ?? '0.0'} gms",
-                            style: const TextStyle(color: Colors.white, fontSize: 16)),
-                        const SizedBox(height: 8),
-                        Text("SafeGold Balance: ${profileProvider.goldProfile?.data.safegoldBal ?? '0.0'} gms",
-                            style: const TextStyle(color: Colors.white70, fontSize: 14)),
-                        const SizedBox(height: 8),
-                        Text("Buy Price: ₹${_goldPrice?.toStringAsFixed(2) ?? 'Loading...'} / gm + 3% GST",
-                            style: const TextStyle(color: Colors.white70, fontSize: 14)),
-                        const SizedBox(height: 8),
-                        const Text("Live", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                      ],
+      body:
+          profileProvider.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 🔐 Locker Info Card
+                    Container(
+                      color: Colors.black,
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Gold in Locker",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "MMTC Balance: ${profileProvider.goldProfile?.data.mmtcBal ?? '0.0'} gms",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "SafeGold Balance: ${profileProvider.goldProfile?.data.safegoldBal ?? '0.0'} gms",
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Buy Price: ₹${_goldPrice?.toStringAsFixed(2) ?? 'Loading...'} / gm + 3% GST",
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            "Live",
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  // 📈 Chart Section
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 200,
-                          child: _isLoading
-                              ? const Center(child: CircularProgressIndicator())
-                              : _chartData.isEmpty
-                                  ? const Center(child: Text("No chart data"))
-                                  : LineChart(
+                    // 📈 Chart Section
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 200,
+                            child:
+                                _isLoading
+                                    ? const Center(
+                                      child: CircularProgressIndicator(),
+                                    )
+                                    : _chartData.isEmpty
+                                    ? const Center(child: Text("No chart data"))
+                                    : LineChart(
                                       LineChartData(
                                         gridData: FlGridData(show: false),
                                         titlesData: FlTitlesData(show: false),
                                         borderData: FlBorderData(
                                           show: true,
                                           border: const Border(
-                                            bottom: BorderSide(color: Colors.grey),
-                                            left: BorderSide(color: Colors.grey),
+                                            bottom: BorderSide(
+                                              color: Colors.grey,
+                                            ),
+                                            left: BorderSide(
+                                              color: Colors.grey,
+                                            ),
                                           ),
                                         ),
                                         lineBarsData: [
@@ -210,116 +206,166 @@ class _GoldScreenState extends State<GoldScreen> {
                                             isStrokeCapRound: true,
                                             belowBarData: BarAreaData(
                                               show: true,
-                                              color: Colors.purple.withOpacity(0.3),
+                                              color: Colors.purple.withOpacity(
+                                                0.3,
+                                              ),
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // ⏱️ Time Range Filter
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: ["1M", "3M", "6M", "1Y"].map((range) {
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _selectedTimeRange = range;
-                                  _loadChartData();
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: _selectedTimeRange == range ? Colors.black : Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.black),
-                                ),
-                                child: Text(
-                                  range,
-                                  style: TextStyle(
-                                    color: _selectedTimeRange == range ? Colors.white : Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // 🪙 SIP & Buy Buttons
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                           ),
-                          child: const Text("START SIP", style: TextStyle(color: Colors.white)),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_goldPrice != null) {
-                              if (profileProvider.goldProfile?.data.safegold == true) {
-                                _showOnboardingDialog(context);
+
+                          const SizedBox(height: 16),
+
+                          // ⏱️ Time Range Filter
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children:
+                                ["1M", "3M", "6M", "1Y"].map((range) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedTimeRange = range;
+                                        _loadChartData();
+                                      });
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            _selectedTimeRange == range
+                                                ? Colors.black
+                                                : Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.black),
+                                      ),
+                                      child: Text(
+                                        range,
+                                        style: TextStyle(
+                                          color:
+                                              _selectedTimeRange == range
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // 🪙 SIP & Buy Buttons
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 12,
+                              ),
+                            ),
+                            child: const Text(
+                              "START SIP",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              if (_goldPrice != null) {
+                                if (profileProvider
+                                        .goldProfile
+                                        ?.data
+                                        .safegold ==
+                                    true) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => BuyGoldScreen(
+                                            goldPrice: _goldPrice!,
+                                          ),
+                                    ),
+                                  );
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProfileScreen(),
+                                    ),
+                                  );
+                                }
                               } else {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => ProfileScreen()),
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Gold price is not available",
+                                    ),
+                                  ),
                                 );
                               }
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Gold price is not available")),
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 12,
+                              ),
+                            ),
+                            child: const Text(
+                              "BUY ONE TIME",
+                              style: TextStyle(color: Colors.white),
+                            ),
                           ),
-                          child: const Text("BUY ONE TIME", style: TextStyle(color: Colors.white)),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                  // 🧾 Sell / History
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        ListTile(
-                          leading: const Icon(Icons.sell, color: Colors.amber),
-                          title: const Text("Sell Gold"),
-                          subtitle: const Text("Sell Gold, explore SIP & do more!"),
-                          onTap: () {},
-                        ),
-                        const Divider(),
-                        ListTile(
-                          leading: const Icon(Icons.history, color: Colors.grey),
-                          title: const Text("Transaction History"),
-                          subtitle: const Text("All Gold Buy / Sell History"),
-                          onTap: () {},
-                        ),
-                      ],
+                    // 🧾 Sell / History
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: const Icon(
+                              Icons.sell,
+                              color: Colors.amber,
+                            ),
+                            title: const Text("Sell Gold"),
+                            subtitle: const Text(
+                              "Sell Gold, explore SIP & do more!",
+                            ),
+                            onTap: () {},
+                          ),
+                          const Divider(),
+                          ListTile(
+                            leading: const Icon(
+                              Icons.history,
+                              color: Colors.grey,
+                            ),
+                            title: const Text("Transaction History"),
+                            subtitle: const Text("All Gold Buy / Sell History"),
+                            onTap: () {},
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
     );
   }
 }

@@ -19,7 +19,6 @@ import 'package:provider/provider.dart';
 
 void main() {
   runApp(
-  
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ConfigProvider()),
@@ -30,8 +29,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => PaymentStatusNotifier()),
         ChangeNotifierProvider(create: (_) => GoldProfileProvider()),
         ChangeNotifierProvider(create: (_) => GoldPriceProvider()),
-         ChangeNotifierProvider(create: (_) => HotelCityProvider()),
-          ChangeNotifierProvider(create: (_) => HotelsListProvider()),
+        ChangeNotifierProvider(create: (_) => HotelCityProvider()),
+        ChangeNotifierProvider(create: (_) => HotelsListProvider()),
       ],
       child: const MyApp(),
     ),
@@ -49,19 +48,19 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
-        textTheme: GoogleFonts.urbanistTextTheme(
-          Theme.of(context).textTheme,
-        ),
+        textTheme: GoogleFonts.urbanistTextTheme(Theme.of(context).textTheme),
       ),
       initialRoute: '/',
       routes: {
         '/': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
-        '/view-bill': (context) => const ViewBillScreen(
+        '/view-bill':
+            (context) => const ViewBillScreen(
               consumerNumber: '',
               operatorName: 'Default Operator',
               number: '',
               operatorId: '12345',
+              selectedCircleId: '',
               category: 'Electricity',
               billData: {
                 'billAmount': 0.0,

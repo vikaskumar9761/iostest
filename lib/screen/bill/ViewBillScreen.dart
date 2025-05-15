@@ -10,6 +10,7 @@ class ViewBillScreen extends StatefulWidget {
   final String consumerNumber;
   final String operatorName;
   final String operatorId;
+  final String selectedCircleId;
   final String category;
   final String number; 
   final Map<String, dynamic> billData;
@@ -20,6 +21,7 @@ class ViewBillScreen extends StatefulWidget {
     required this.consumerNumber,
     required this.operatorName,
     required this.operatorId,
+    required this.selectedCircleId,
     required this.category,
     required this.billData,
   });
@@ -92,6 +94,7 @@ class _ViewBillScreenState extends State<ViewBillScreen> {
         category: widget.category,
         consumerNumber: widget.consumerNumber,
         operatorId: widget.operatorId,
+        selectedCircleId: widget.selectedCircleId,
         paymentMethods: _selectedPaymentMethods,
         adParams: {},
       );

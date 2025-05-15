@@ -1,6 +1,8 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:iostest/apiservice/setheader.dart';
+import 'package:iostest/config/url_constants.dart';
 import 'package:iostest/models/gold_profile_model.dart';
 
 class GoldProfileProvider extends ChangeNotifier {
@@ -11,38 +13,38 @@ class GoldProfileProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   Future<void> fetchGoldProfile() async {
-    const url = 'https://justb2c.grahaksathi.com/api/gold/profile';
-    const token =
-        'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI4OTUxODU0OTQ5IiwiYXV0aCI6IiIsImV4cCI6MTgzMjkzMTA0Nn0.80_jGqb6Mp4Pxb55yd841JBlQHNiICx8js3ytBprjwRpP8ylIeuGeBj4SnjwwOSjEzYVDUNrUze-3rVKYc3_Kw';
+    final url = UrlConstants.goldProfile;
 
     _isLoading = true;
     notifyListeners();
 
     try {
-      print('Fetching gold profile data from $url');
+      final headers = await SetHeaderHttps.setHttpheader(); // ✅ Centralized header
+
+      if (kDebugMode) {
+        print('Fetching gold profile from $url');
+      }
+
       final response = await http.get(
         Uri.parse(url),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
+        headers: headers,
       );
 
-     print('Response status code: ${response.statusCode}');
-     print('Response body: ❤️ ${response.body}');
+      if (kDebugMode) {
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-      // print('Parsed data: $data');
-
         _goldProfile = GoldProfileResponse.fromJson(data);
-       // print('Gold Profile: ${_goldProfile!.data.mmtcBal}, ${_goldProfile!.data.safegoldBal}');
       } else {
-        print('Error: Failed to load gold profile with status code ${response.statusCode}');
-        throw Exception("Failed to load gold profile");
+        throw Exception("Failed to load gold profile (Status ${response.statusCode})");
       }
     } catch (error) {
-      print('Error: $error');
+      if (kDebugMode) {
+        print('Gold profile fetch error: $error');
+      }
       rethrow;
     } finally {
       _isLoading = false;

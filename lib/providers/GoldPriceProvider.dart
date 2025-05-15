@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:iostest/config/url_constants.dart';
+import 'package:iostest/apiservice/setheader.dart';
 import 'package:iostest/models/gold_price_model.dart';
 
 class GoldPriceProvider extends ChangeNotifier {
@@ -13,35 +15,29 @@ class GoldPriceProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   Future<void> fetchGoldPrice() async {
-    const url = 'https://justb2c.grahaksathi.com/api/gold/buy/price';
-    const token =
-        'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI4OTUxODU0OTQ5IiwiYXV0aCI6IiIsImV4cCI6MTgzMjkzMTA0Nn0.80_jGqb6Mp4Pxb55yd841JBlQHNiICx8js3ytBprjwRpP8ylIeuGeBj4SnjwwOSjEzYVDUNrUze-3rVKYc3_Kw';
+    final url = Uri.parse(UrlConstants.goldBuyPrice);
+    final headers = await SetHeaderHttps.setHttpheader();
 
     _isLoading = true;
     notifyListeners();
 
     try {
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await http.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final overview = GoldOverviewResponse.fromJson(data);
         _goldData = overview.data;
       } else {
-        throw Exception('Failed to load gold price');
+        throw Exception(
+          'Failed to load gold price (status: ${response.statusCode})',
+        );
       }
     } catch (error) {
-      print('Error: $error');
+      print('❌ Error fetching gold price: $error');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
-
 }

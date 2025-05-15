@@ -453,6 +453,7 @@ class OperatorSelectionScreen extends StatelessWidget {
                                             operatorId: operator.id,
                                             category: categoryId,
                                             selectedCircleName: '',
+                                            selectedCircleId: '',
                                             billerObject: operator.biller.toMap(),
                                             number: phoneNumber,
                                           ),

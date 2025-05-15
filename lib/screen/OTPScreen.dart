@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:iostest/providers/otp_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 
 class OTPScreen extends StatefulWidget {
   final String phoneNumber;
@@ -17,7 +17,7 @@ class _OTPScreenState extends State<OTPScreen> {
   String _otp = '';
 
   void _handleVerification() async {
-    if (_otp.length != 6) {
+    if (_otp.trim().length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a valid 6-digit OTP')),
       );
@@ -40,6 +40,7 @@ class _OTPScreenState extends State<OTPScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: Colors.black,
         leading: IconButton(
@@ -51,11 +52,12 @@ class _OTPScreenState extends State<OTPScreen> {
         builder: (context, notifier, child) {
           return Stack(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(24.0),
+              SingleChildScrollView(
+                padding: const EdgeInsets.all(22.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const SizedBox(height: 20),
                     Text(
                       'Verify OTP',
                       style: GoogleFonts.urbanist(
@@ -66,7 +68,7 @@ class _OTPScreenState extends State<OTPScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Enter 6 digit code sent to',
+                      'Enter the 6-digit code sent to',
                       style: GoogleFonts.urbanist(
                         color: Colors.white70,
                         fontSize: 16,
@@ -81,21 +83,51 @@ class _OTPScreenState extends State<OTPScreen> {
                       ),
                     ),
                     const SizedBox(height: 40),
-                    OtpTextField(
-                      numberOfFields: 6,
-                      borderColor: Colors.white,
-                      showFieldAsBox: true,
-                      onCodeChanged: (String code) => _otp = code,
-                      onSubmit: (String verificationCode) {
-                        _otp = verificationCode;
+
+                    /// OTP Input Field using PinCodeTextField
+                    PinCodeTextField(
+                      appContext: context,
+                      length: 6,
+                      autoFocus: true,
+                      keyboardType: TextInputType.number,
+                      cursorColor: Colors.white,
+                      animationType: AnimationType.fade,
+                      textStyle: const TextStyle(color: Colors.white),
+                      animationDuration: const Duration(milliseconds: 300),
+                      enableActiveFill: true,
+                      pinTheme: PinTheme(
+                        shape: PinCodeFieldShape.box,
+                        borderRadius: BorderRadius.circular(8),
+                        fieldHeight: 50,
+                        fieldWidth: 45,
+                        inactiveColor: Colors.white38,
+                        activeColor: Colors.white,
+                        selectedColor: Colors.amber,
+                        activeFillColor: Colors.white10,
+                        inactiveFillColor: Colors.white10,
+                        selectedFillColor: Colors.white10,
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _otp = value;
+                        });
+                      },
+                      onCompleted: (value) {
+                        setState(() {
+                          _otp = value;
+                        });
                         _handleVerification();
                       },
                     ),
+
                     const SizedBox(height: 40),
+
+                    /// Verify Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: notifier.isLoading ? null : _handleVerification,
+                        onPressed:
+                            notifier.isLoading ? null : _handleVerification,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -103,21 +135,24 @@ class _OTPScreenState extends State<OTPScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: notifier.isLoading
-                            ? const CircularProgressIndicator()
-                            : Text(
-                                'Verify',
-                                style: GoogleFonts.urbanist(
-                                  color: Colors.black,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                        child:
+                            notifier.isLoading
+                                ? const CircularProgressIndicator()
+                                : Text(
+                                  'Verify',
+                                  style: GoogleFonts.urbanist(
+                                    color: Colors.black,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
                       ),
                     ),
                   ],
                 ),
               ),
+
+              /// Loading overlay
               if (notifier.isLoading)
                 Container(
                   color: Colors.black54,

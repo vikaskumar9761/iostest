@@ -123,6 +123,7 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
           builder: (context) => ViewBillScreen(
             consumerNumber: widget.number ?? '',/// 2255313738 
             operatorName: widget.operatorName,
+            selectedCircleId: widget.selectedCircleId,
             number: widget.number,
             operatorId: widget.operatorId,
             category: widget.category,

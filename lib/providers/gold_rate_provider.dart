@@ -1,27 +1,21 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:iostest/models/gold_rate_model.dart';
+import 'package:iostest/apiservice/setheader.dart';
+import 'package:iostest/config/url_constants.dart';
 
 Future<Map<String, List<GoldRateEntry>>> fetchGoldHistoricalDataGrouped() async {
-  final url = Uri.parse('https://justb2c.grahaksathi.com/api/gold/gold/historical?fromDate=23-02-01&toDate=23-02-02&type=d');
-  final token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI4OTUxODU0OTQ5IiwiYXV0aCI6IiIsImV4cCI6MTgzMjkzMTA0Nn0.80_jGqb6Mp4Pxb55yd841JBlQHNiICx8js3ytBprjwRpP8ylIeuGeBj4SnjwwOSjEzYVDUNrUze-3rVKYc3_Kw';
-  
+  final url = Uri.parse(UrlConstants.goldHistry); // ✅ Centralized URL
+  final headers = await SetHeaderHttps.setHttpheader(); // ✅ Centralized Headers
+
   print('Fetching grouped gold historical data from $url');
-  final response = await http.get(
-    url,
-    headers: {
-      'Authorization': 'Bearer $token',
-      'Content-Type': 'application/json',
-    },
-  );
-  
-  // print('Response status code: ${response.statusCode}');
-  // print('Response body: ${response.body}');
-  
+
+  final response = await http.get(url, headers: headers);
+
   if (response.statusCode == 200) {
     final data = json.decode(response.body);
     final Map<String, List<GoldRateEntry>> groupedData = {};
-    
+
     if (data is Map) {
       data.forEach((key, value) {
         if (value is List) {

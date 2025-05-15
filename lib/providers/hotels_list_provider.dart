@@ -1,22 +1,20 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:iostest/config/url_constants.dart';
+import 'package:iostest/apiservice/setheader.dart';
 import 'package:iostest/models/hotels_list_model.dart';
 
 class HotelsListProvider with ChangeNotifier {
-  final String baseUrl = 'https://justb2c.grahaksathi.com/api/hotels/city/';
-  final String token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiI4OTUxODU0OTQ5IiwiYXV0aCI6IiIsImV4cCI6MTgyNzk5NjU0N30.0oDdm5BVKdorpJw17XaFfhuvG0WWhBY_cejzIH0HvSbObLXA-qFNND6ZOIJHhfDw-tKv9P2re9fiZc6_D6vTuQ';
-
   HotelsListResponse? hotelsListResponse;
 
   Future<void> fetchHotelsList(String city) async {
+    final url = '${UrlConstants.hotelsList}$city';
+    final headers = await SetHeaderHttps.setHttpheader();
+
     try {
-      final url = '$baseUrl$city';
       debugPrint('🔄 Fetching hotels list from API for city: $city');
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {'Authorization': 'Bearer $token'},
-      );
+      final response = await http.get(Uri.parse(url), headers: headers);
 
       debugPrint('✅ API Status Code: ${response.statusCode}');
       debugPrint('📦 Raw API Response Body: ${response.body}');

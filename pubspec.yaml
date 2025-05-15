@@ -52,6 +52,7 @@ dependencies:
   flutter_upi_india: ^0.0.6
   fl_chart: ^0.64.0
   syncfusion_flutter_charts: ^25.1.35
+  pin_code_fields: ^8.0.1 
 
 
 dev_dependencies:
