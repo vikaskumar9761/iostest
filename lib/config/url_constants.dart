@@ -11,4 +11,5 @@ class UrlConstants {
   static const String goldHistry ='$baseUrl/gold/gold/historical?fromDate=23-02-01&toDate=23-02-02&type=d';
   static const String goldBuyPrice = '$baseUrl/gold/buy/price';
   static const String rechargePlans = '$baseUrl/recharge/plans';
+  static const String flight_City_list = '$baseUrl/flights/dom';
 }

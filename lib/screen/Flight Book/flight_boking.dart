@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:iostest/screen/Flight%20Book/flight_City_list.dart';
+import 'package:iostest/screen/Flight%20Book/flight_listing_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FlightBookingScreen extends StatefulWidget {
@@ -9,44 +11,29 @@ class FlightBookingScreen extends StatefulWidget {
 }
 
 class _FlightBookingScreenState extends State<FlightBookingScreen> {
-  String _tripType = "One Way"; // Default trip type
-  String _from = "From"; // Default departure
-  String _to = "To"; // Default destination
-  String _departureDate = "Select Date"; // Default date
-  String _travelerClass = "1 Adult"; // Default traveler and class
-  bool _directFlightsOnly = false; // Default checkbox value
-  bool _refundableFlights = false; // Default checkbox value
+  String _tripType = "One Way";
+  String _from = "From";
+  String _to = "To";
+  String _departureDate = "Select Date";
 
-  final List<String> _departureList = [
-    "New York",
-    "Los Angeles",
-    "Chicago",
-    "Houston",
-    "San Francisco"
-  ]; // Dummy list for departure
+  int _adultCount = 1;
+  int _childCount = 0;
+  String _selectedClass = "Economy";
 
-  final List<String> _destinationList = [
-    "Miami",
-    "Seattle",
-    "Boston",
-    "Dallas",
-    "Atlanta"
-  ]; // Dummy list for destination
+  bool _directFlightsOnly = false;
+  bool _refundableFlights = false;
 
-  final List<String> _travelerClassList = [
-    "1 Adult",
-    "2 Adults",
-    "1 Adult, 1 Child",
-    "Business Class"
-  ]; // Dummy list for travelers & class
+  String get _travelerClass =>
+      "${_adultCount} Adult${_adultCount > 1 ? 's' : ''}"
+      "${_childCount > 0 ? ', $_childCount Child${_childCount > 1 ? 'ren' : ''}' : ''}"
+      " - $_selectedClass";
 
   @override
   void initState() {
     super.initState();
-    _loadSavedData(); // Load saved data from SharedPreferences
+    _loadSavedData();
   }
 
-  /// Load saved data from SharedPreferences
   Future<void> _loadSavedData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -54,60 +41,134 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
       _from = prefs.getString('from') ?? "Select Departure";
       _to = prefs.getString('to') ?? "Select Destination";
       _departureDate = prefs.getString('departureDate') ?? "Select Date";
-      _travelerClass = prefs.getString('travelerClass') ?? "1 Adult";
+      _adultCount = prefs.getInt('adultCount') ?? 1;
+      _childCount = prefs.getInt('childCount') ?? 0;
+      _selectedClass = prefs.getString('selectedClass') ?? "Economy";
       _directFlightsOnly = prefs.getBool('directFlightsOnly') ?? false;
       _refundableFlights = prefs.getBool('refundableFlights') ?? false;
     });
   }
 
-  /// Save data to SharedPreferences
   Future<void> _saveData() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('tripType', _tripType);
     await prefs.setString('from', _from);
     await prefs.setString('to', _to);
     await prefs.setString('departureDate', _departureDate);
-    await prefs.setString('travelerClass', _travelerClass);
+    await prefs.setInt('adultCount', _adultCount);
+    await prefs.setInt('childCount', _childCount);
+    await prefs.setString('selectedClass', _selectedClass);
     await prefs.setBool('directFlightsOnly', _directFlightsOnly);
     await prefs.setBool('refundableFlights', _refundableFlights);
   }
 
-  /// Show a dropdown for selection
-  Future<void> _showDropdownDialog(
-      String title, List<String> options, Function(String) onSelected) async {
-    showDialog(
+  String getTravelerSummary() {
+    String travelerText = '$_adultCount Adult';
+    if (_childCount > 0) {
+      travelerText += ', $_childCount Child';
+    }
+    return "$travelerText, $_selectedClass";
+  }
+
+  void _showTravelerBottomSheet() {
+    showModalBottomSheet(
       context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
-        return AlertDialog(
-          title: Text(title),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8, // Set a fixed width
-            height: 200, // Set a fixed height
-            child: ListView.builder(
-              itemCount: options.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(options[index]),
-                  onTap: () {
-                    onSelected(options[index]);
-                    Navigator.pop(context);
-                  },
-                );
-              },
-            ),
-          ),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "Select Travelers & Class",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildCounterRow("Adults", _adultCount, (val) {
+                    setModalState(() {
+                      _adultCount = val < 1 ? 1 : val;
+                    });
+                    setState(() {}); // update parent display as well
+                  }),
+                  _buildCounterRow("Children", _childCount, (val) {
+                    setModalState(() {
+                      _childCount = val < 0 ? 0 : val;
+                    });
+                    setState(() {});
+                  }),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Text("Class:", style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 16),
+                      DropdownButton<String>(
+                        value: _selectedClass,
+                        items: const [
+                          DropdownMenuItem(
+                            value: "Economy",
+                            child: Text("Economy"),
+                          ),
+                          DropdownMenuItem(
+                            value: "Business",
+                            child: Text("Business"),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setModalState(() {
+                            _selectedClass = value!;
+                          });
+                          setState(() {});
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Done"),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
+    );
+  }
+
+  Widget _buildCounterRow(String title, int value, Function(int) onChanged) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 16)),
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.remove_circle_outline),
+              onPressed: () => onChanged(value - 1),
+            ),
+            Text('$value', style: const TextStyle(fontSize: 16)),
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline),
+              onPressed: () => onChanged(value + 1),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Book Flights"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("Book Flights"), centerTitle: true),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -139,39 +200,52 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
               ],
             ),
             const SizedBox(height: 16),
+            const Divider(),
 
-            // From Dropdown
+            // From
             ListTile(
               leading: const Icon(Icons.flight_takeoff),
               title: Text(_from),
-              onTap: () {
-                _showDropdownDialog(
-                  "From",
-                  _departureList,
-                  (value) {
-                    setState(() {
-                      _from = value;
-                    });
-                  },
+              onTap: () async {
+                final selected = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (_) => const DepartureListScreen(
+                          title: "From (Select Departure)",
+                        ),
+                  ),
                 );
+                if (selected != null && selected is City) {
+                  setState(() {
+                    _from =
+                        "${selected.name} (${selected.code}) ${selected.country}";
+                  });
+                }
               },
             ),
             const Divider(),
 
-            // To Dropdown
+            // To
             ListTile(
               leading: const Icon(Icons.flight_land),
               title: Text(_to),
-              onTap: () {
-                _showDropdownDialog(
-                  "To",
-                  _destinationList,
-                  (value) {
-                    setState(() {
-                      _to = value;
-                    });
-                  },
+              onTap: () async {
+                final selected = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (_) => const DepartureListScreen(
+                          title: "To (Select Destination )",
+                        ),
+                  ),
                 );
+                if (selected != null && selected is City) {
+                  setState(() {
+                    _to =
+                        "${selected.name} (${selected.code}) ${selected.country}";
+                  });
+                }
               },
             ),
             const Divider(),
@@ -197,21 +271,12 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
             ),
             const Divider(),
 
-            // Travelers and Class
+            // Traveler & Class
+            // Traveler & Class
             ListTile(
               leading: const Icon(Icons.person),
-              title: Text(_travelerClass),
-              onTap: () {
-                _showDropdownDialog(
-                  "Select Travelers & Class",
-                  _travelerClassList,
-                  (value) {
-                    setState(() {
-                      _travelerClass = value;
-                    });
-                  },
-                );
-              },
+              title: Text(getTravelerSummary()),
+              onTap: _showTravelerBottomSheet,
             ),
             const Divider(),
 
@@ -241,15 +306,28 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Search Flights Button
+            // Search Button
             Center(
               child: ElevatedButton(
-                onPressed: () {
-                  _saveData(); // Save data to SharedPreferences
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Flight details saved!")),
+                // ...existing code...
+                onPressed: () async {
+                  await _saveData();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => FlightListingScreen(
+                            from: _from,
+                            to: _to,
+                            departureDate: _departureDate,
+                            adultCount: _adultCount,
+                            childCount: _childCount,
+                            tripType: _tripType,
+                          ),
+                    ),
                   );
                 },
+                // ...existing code...
                 child: const Text("SEARCH FLIGHTS"),
               ),
             ),

@@ -18,8 +18,8 @@ class _BuyGoldScreenState extends State<BuyGoldScreen> {
 
   // Remove this incorrect provider reference
 
-  final TextEditingController _amountController = TextEditingController(
-    text: '100',
+   TextEditingController _amountController = TextEditingController(
+    text: '10',
   );
   // final double _goldPrice = widget.goldPrice. ?? 0.0; // Assuming goldPrice is a double
   final List<int> _recommendedAmounts = [100, 500, 1500, 5000];
@@ -165,6 +165,11 @@ class _BuyGoldScreenState extends State<BuyGoldScreen> {
       }
     } catch (_) {}
 
+    bool isValidInput =
+        _buyInRupees
+            ? (double.tryParse(_amountController.text) ?? 0.0) >= 10
+            : (double.tryParse(_amountController.text) ?? 0.0) >= 0.10;
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -254,24 +259,34 @@ class _BuyGoldScreenState extends State<BuyGoldScreen> {
                         ],
                       ),
                       const SizedBox(height: 24),
+                      // ✅ Replace starts here
                       TextField(
                         controller: _amountController,
-                        keyboardType: TextInputType.number,
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         decoration: InputDecoration(
-                          prefixText: _buyInRupees ? '₹ ' : '',
+                          prefixText: _buyInRupees ? '₹ ' : 'gm ',
                           suffixText:
                               _buyInRupees
                                   ? '= ${gramsValue.toStringAsFixed(4)} gm'
                                   : '= ₹${finalAmount.toStringAsFixed(2)}',
                           border: const UnderlineInputBorder(),
+                          errorText:
+                              !isValidInput
+                                  ? _buyInRupees
+                                      ? 'Min amount is ₹10'
+                                      : 'Min weight is 0.10 gm'
+                                  : null,
                         ),
                       ),
                       const SizedBox(height: 8),
+                      // ✅ Replace ends here
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Min ₹10',
+                            _buyInRupees ? 'Min ₹10' : 'Min 0.01 gm',
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                           Row(
