@@ -8,7 +8,9 @@ import 'package:iostest/providers/gold_profile_provider.dart';
 import 'package:iostest/providers/hotel_city_provider.dart';
 import 'package:iostest/providers/hotels_list_provider.dart';
 import 'package:iostest/providers/otp_provider.dart';
+import 'package:iostest/providers/pan_provider.dart';
 import 'package:iostest/providers/payment_status_notifier.dart';
+import 'package:iostest/providers/pin_code_provider.dart';
 import 'package:iostest/providers/profile_provider.dart';
 import 'package:iostest/screen/SplashScreen.dart';
 import 'package:iostest/screen/LoginScreen.dart';
@@ -33,6 +35,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => HotelCityProvider()),
         ChangeNotifierProvider(create: (_) => HotelsListProvider()),
         ChangeNotifierProvider(create: (_) => FlightListProvider()),
+        ChangeNotifierProvider(create: (_) => PinCodeProvider()),
+          ChangeNotifierProvider(create: (_) => PanVerificationProvider()),
       ],
       child: const MyApp(),
     ),

@@ -38,7 +38,7 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
   List<BrowsePlan> browsePlans = [];
   final _formKey = GlobalKey<FormState>();
   Map<String, dynamic> inputValues = {};
-  String query = ""; // Search query
+  String query = "";
   bool isLoading = true;
 
   @override
@@ -48,7 +48,6 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
     fetchBrowsePlans();
   }
 
-  /// Fetch Browse Plans from ConfigUtil
   Future<void> fetchBrowsePlans() async {
     final fetchedBrowsePlans = await ConfigUtil.getBrowsePlans();
     if (fetchedBrowsePlans.isNotEmpty) {
@@ -60,7 +59,6 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
     }
   }
 
-  /// Fetch Plans from API
   Future<void> fetchPlans() async {
     try {
       final plansModel = await PlansProvider().fetchPlans(
@@ -84,13 +82,10 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
     }
   }
 
-  /// Filter plans based on the search query
   List<Plan> filterPlans(List<Plan> plans, String query) {
-    if (query.isEmpty) {
-      return plans;
-    }
+    if (query.isEmpty) return plans;
+    final lowerQuery = query.toLowerCase();
     return plans.where((plan) {
-      final lowerQuery = query.toLowerCase();
       return plan.planName.toLowerCase().contains(lowerQuery) ||
           plan.planDescription.toLowerCase().contains(lowerQuery) ||
           plan.amount.toString().contains(lowerQuery) ||
@@ -98,7 +93,6 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
     }).toList();
   }
 
-  /// Proceed to the next screen
   Future<void> onProceed(Plan selectedPlan) async {
     setState(() {
       isLoading = true;
@@ -117,22 +111,23 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
       isLoading = false;
     });
 
-     if (billData != null) {
+    if (billData != null) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => ViewBillScreen(
-            consumerNumber: widget.number ?? '',/// 2255313738 
-            operatorName: widget.operatorName,
-            selectedCircleId: widget.selectedCircleId,
-            number: widget.number,
-            operatorId: widget.operatorId,
-            category: widget.category,
-            billData: {
-              'billAmount':selectedPlan.amount?? 0.0,
-              'userName': billData['userName'] ?? 'N/A',
-              'dueDate': billData['billdate'] ?? '',
-            },
-          ),
+          builder:
+              (context) => ViewBillScreen(
+                consumerNumber: widget.number,
+                operatorName: widget.operatorName,
+                selectedCircleId: widget.selectedCircleId,
+                number: widget.number,
+                operatorId: widget.operatorId,
+                category: widget.category,
+                billData: {
+                  'billAmount': selectedPlan.amount ?? 0.0,
+                  'userName': billData['userName'] ?? 'N/A',
+                  'dueDate': billData['billdate'] ?? '',
+                },
+              ),
         ),
       );
     } else {
@@ -140,36 +135,12 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
         SnackBar(content: Text(billNotifier.error ?? 'Failed to fetch bill')),
       );
     }
-
-    // if (billData != null) {
-    //   Navigator.of(context).push(
-    //     MaterialPageRoute(
-    //       builder: (context) => PaymentScreen(
-    //         operatorType: widget.operatorType,
-    //         selectedCircleName: widget.selectedCircleName,
-    //         selectedCircleId: widget.selectedCircleId,
-    //         number: widget.number,
-    //         operatorName: widget.operatorName,
-    //         operatorId: widget.operatorId,
-    //         category: widget.category,
-    //         billerObject: widget.billerObject,
-    //         planName: selectedPlan.planName,
-    //         amount: selectedPlan.amount,
-    //         validity: selectedPlan.validity,
-    //       ),
-    //     ),
-    //   );
-    // } else {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     SnackBar(content: Text(billNotifier.error ?? 'Failed to fetch bill')),
-    //   );
-    // }
   }
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: browsePlans.length, // Number of tabs
+      length: browsePlans.length,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -206,11 +177,14 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   child: TextField(
                     onChanged: (value) {
                       setState(() {
-                        query = value; // Update the search query
+                        query = value;
                       });
                     },
                     decoration: InputDecoration(
@@ -227,31 +201,43 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
                   labelColor: Colors.blue,
                   unselectedLabelColor: Colors.black,
                   indicatorColor: Colors.blue,
-                  tabs: browsePlans.map((browsePlan) => Tab(text: browsePlan.planName)).toList(),
+                  tabs:
+                      browsePlans
+                          .map((browsePlan) => Tab(text: browsePlan.planName))
+                          .toList(),
                 ),
               ],
             ),
           ),
         ),
-        body: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : TabBarView(
-                children: browsePlans.map((browsePlan) {
-                  final filteredPlans = browsePlan.planId == "1"
-                      ? filterPlans(plans, query)
-                      : filterPlans(
-                          plans.where((plan) => plan.planType.toString() == browsePlan.planId).toList(),
+        body:
+            isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : TabBarView(
+                  children:
+                      browsePlans.map((browsePlan) {
+                        final currentTabPlans =
+                            browsePlan.planId == "1"
+                                ? plans
+                                : plans
+                                    .where(
+                                      (plan) =>
+                                          plan.planType.toString() ==
+                                          browsePlan.planId,
+                                    )
+                                    .toList();
+
+                        final filteredPlans = filterPlans(
+                          currentTabPlans,
                           query,
                         );
-
-                  return buildPlansList(filteredPlans);
-                }).toList(),
-              ),
+                        return buildPlansList(filteredPlans);
+                      }).toList(),
+                ),
       ),
     );
   }
 
-  /// Builds the list of plans
   Widget buildPlansList(List<Plan> plans) {
     if (plans.isEmpty) {
       return const Center(child: Text("No plans found"));
@@ -295,7 +281,10 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
                               children: [
                                 const Text(
                                   "Validity",
-                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
                                 ),
                                 Text(
                                   plan.validity,
@@ -312,7 +301,10 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
                               children: [
                                 const Text(
                                   "Data",
-                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
                                 ),
                                 Text(
                                   plan.dataBenefit,
@@ -332,7 +324,10 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
                             padding: const EdgeInsets.only(top: 4),
                             child: Text(
                               plan.planDescription,
-                              style: const TextStyle(fontSize: 12, color: Colors.black87),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black87,
+                              ),
                             ),
                           ),
                       ],

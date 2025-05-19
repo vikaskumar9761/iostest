@@ -13,14 +13,14 @@ class FlightListingScreen extends StatefulWidget {
   final String tripType;
 
   const FlightListingScreen({
-    Key? key,
+    super.key,
     required this.from,
     required this.to,
     required this.departureDate,
     required this.adultCount,
     required this.childCount,
     required this.tripType,
-    }) : super(key: key);
+    });
 
   @override
   State<FlightListingScreen> createState() => _FlightListingScreenState();

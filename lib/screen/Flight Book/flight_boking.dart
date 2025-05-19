@@ -24,7 +24,7 @@ class _FlightBookingScreenState extends State<FlightBookingScreen> {
   bool _refundableFlights = false;
 
   String get _travelerClass =>
-      "${_adultCount} Adult${_adultCount > 1 ? 's' : ''}"
+      "$_adultCount Adult${_adultCount > 1 ? 's' : ''}"
       "${_childCount > 0 ? ', $_childCount Child${_childCount > 1 ? 'ren' : ''}' : ''}"
       " - $_selectedClass";
 

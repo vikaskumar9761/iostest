@@ -18,7 +18,7 @@ class _BuyGoldScreenState extends State<BuyGoldScreen> {
 
   // Remove this incorrect provider reference
 
-   TextEditingController _amountController = TextEditingController(
+   final TextEditingController _amountController = TextEditingController(
     text: '10',
   );
   // final double _goldPrice = widget.goldPrice. ?? 0.0; // Assuming goldPrice is a double
@@ -46,7 +46,14 @@ class _BuyGoldScreenState extends State<BuyGoldScreen> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pop(dialogContext); // Close the dialog
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) =>
+                                  BuyGoldScreen(goldPrice: widget.goldPrice),
+                        ),
+                      ); // Close the dialog
                 },
                 child: const Text("CANCEL"),
               ),
@@ -54,7 +61,7 @@ class _BuyGoldScreenState extends State<BuyGoldScreen> {
                 onPressed: () {
                   Navigator.pop(dialogContext); // Close the dialog first
                   Navigator.of(context, rootNavigator: true).push(
-                    MaterialPageRoute(builder: (_) => const MMTC_PinScreen()),
+                    MaterialPageRoute(builder: (_) => MMTC_PinScreen(goldPrice: widget.goldPrice, )),
                   );
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.black),

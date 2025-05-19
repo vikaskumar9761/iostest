@@ -9,6 +9,8 @@ import 'package:iostest/providers/gold_rate_provider.dart';
 import 'package:iostest/screen/Gold%20Sip/buy_gold_screen.dart';
 import 'package:iostest/screen/Profile%20Screen/profile_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+
 
 class GoldScreen extends StatefulWidget {
   const GoldScreen({super.key});
@@ -20,6 +22,7 @@ class GoldScreen extends StatefulWidget {
 class _GoldScreenState extends State<GoldScreen> {
   String _selectedTimeRange = "1M";
   List<FlSpot> _chartData = [];
+  List<String> _chartDates = [];
   Map<String, List<GoldRateEntry>> _goldGroupedData = {};
   bool _isLoading = true;
   double? _goldPrice;
@@ -73,16 +76,35 @@ class _GoldScreenState extends State<GoldScreen> {
   }
 
   /// Converts selected historical gold rate entries into `FlSpot` chart data
+  // void _loadChartData() {
+  //   final selectedData = _goldGroupedData[_selectedTimeRange];
+  //   if (selectedData != null && selectedData.isNotEmpty) {
+  //     final reversedData = selectedData.reversed.toList();
+  //     _chartData =
+  //         reversedData.asMap().entries.map((entry) {
+  //           return FlSpot(entry.key.toDouble(), entry.value.rate.toDouble());
+  //         }).toList();
+  //   } else {
+  //     _chartData = [];
+  //   }
+  // }
   void _loadChartData() {
     final selectedData = _goldGroupedData[_selectedTimeRange];
     if (selectedData != null && selectedData.isNotEmpty) {
       final reversedData = selectedData.reversed.toList();
-      _chartData =
-          reversedData.asMap().entries.map((entry) {
-            return FlSpot(entry.key.toDouble(), entry.value.rate.toDouble());
-          }).toList();
+
+      _chartData = [];
+      _chartDates = []; // 👈 Reset kar rahe
+
+      for (int i = 0; i < reversedData.length; i++) {
+        _chartData.add(FlSpot(i.toDouble(), reversedData[i].rate.toDouble()));
+        _chartDates.add(
+          reversedData[i].slotTime.toString(),
+        ); // 👈 Date store karo
+      }
     } else {
       _chartData = [];
+      _chartDates = [];
     }
   }
 
@@ -100,8 +122,6 @@ class _GoldScreenState extends State<GoldScreen> {
       print("❌ Error fetching gold buy price: $e");
     }
   }
-
- 
 
   @override
   Widget build(BuildContext context) {
@@ -197,6 +217,38 @@ class _GoldScreenState extends State<GoldScreen> {
                                             ),
                                           ),
                                         ),
+
+                                        // 👇👇 Add this block
+                                        lineTouchData: LineTouchData(
+                                          enabled: true,
+                                          touchTooltipData: LineTouchTooltipData(
+                                            tooltipBgColor: Colors.black87,
+                                            getTooltipItems: (touchedSpots) {
+                                              return touchedSpots.map((spot) {
+                                                final index = spot.x.toInt();
+                                                String dateStr = '';
+                                                if (index <
+                                                    _chartDates.length) {
+                                                  final date = DateTime.parse(
+                                                    _chartDates[index],
+                                                  );
+                                                  dateStr = DateFormat(
+                                                    'dd MMM',
+                                                  ).format(date);
+                                                }
+                                                return LineTooltipItem(
+                                                  '₹${spot.y.toStringAsFixed(2)}\n$dateStr',
+                                                  const TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                );
+                                              }).toList();
+                                            },
+                                          ),
+                                        ),
+
+                                        // 👆👆 Until here
                                         lineBarsData: [
                                           LineChartBarData(
                                             spots: _chartData,
@@ -215,7 +267,6 @@ class _GoldScreenState extends State<GoldScreen> {
                                       ),
                                     ),
                           ),
-
                           const SizedBox(height: 16),
 
                           // ⏱️ Time Range Filter
