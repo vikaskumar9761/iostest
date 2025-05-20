@@ -16,20 +16,24 @@ class _MMTC_PinScreenState extends State<MMTC_PinScreen> {
   final TextEditingController _pinController = TextEditingController();
   final TextEditingController _panController = TextEditingController();
 
-  void _onCheckPinPressed(BuildContext context) async {
-    final pin = _pinController.text.trim();
-    if (pin.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please enter a PINCODE')));
-      return;
-    }
-    final provider = Provider.of<PinCodeProvider>(context, listen: false);
-    await provider.checkPincodeServiceable(pin);
-  }
+  bool isPanFieldEnabled = false;
 
   @override
   Widget build(BuildContext context) {
+    final pinProvider = Provider.of<PinCodeProvider>(context);
+    final panProvider = Provider.of<PanVerificationProvider>(context);
+
+    final isPinSuccess = pinProvider.pinCodeResponse?.success == true;
+    final isPanSuccess = panProvider.panInfo?.success == true;
+
+    // Enable PAN field only after successful PIN
+    isPanFieldEnabled = isPinSuccess;
+    print("ispinsuccess${isPanSuccess}");
+
+    final bool canProceed = isPinSuccess && isPanSuccess;
+
+    print("canproceed${canProceed}");
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('MMTC Onboarding'),
@@ -41,150 +45,191 @@ class _MMTC_PinScreenState extends State<MMTC_PinScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Card with PINCODE and PAN fields
-              Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              _buildCard(context, pinProvider, panProvider),
+              const SizedBox(height: 32),
+              _buildActionButtons(context, canProceed),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCard(
+    BuildContext context,
+    PinCodeProvider pinProvider,
+    PanVerificationProvider panProvider,
+  ) {
+    final isPinSuccess = pinProvider.pinCodeResponse?.success == true;
+    final isPanSuccess = panProvider.panInfo?.success == true;
+
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Enter PINCODE",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            _buildPinField(pinProvider, isPinSuccess),
+            const SizedBox(height: 16),
+            _buildPanField(panProvider, isPanSuccess),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPinField(PinCodeProvider pinProvider, bool isPinSuccess) {
+    final pinResponse = pinProvider.pinCodeResponse;
+
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _pinController,
+            decoration: const InputDecoration(
+              hintText: "Enter PINCODE",
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12),
+            ),
+            keyboardType: TextInputType.number,
+            onChanged: (_) => setState(() {}),
+          ),
+        ),
+        const SizedBox(width: 8),
+        SizedBox(
+          height: 48,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  pinResponse == null
+                      ? Colors.black
+                      : (isPinSuccess ? Colors.green : Colors.pink),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+            onPressed: () async {
+              final pin = _pinController.text.trim();
+              if (pin.length == 6 && int.tryParse(pin) != null) {
+                await pinProvider.checkPincodeServiceable(pin);
+                if (mounted) {
+                  setState(() {
+                    isPanFieldEnabled =
+                        pinProvider.pinCodeResponse?.success == true;
+                  });
+                }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enter a valid 6-digit PIN code.'),
+                  ),
+                );
+              }
+            },
+            child: const Text("CHECK"),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPanField(
+    PanVerificationProvider panProvider,
+    bool isPanSuccess,
+  ) {
+    final panResponse = panProvider.panInfo;
+
+    return Opacity(
+      opacity: isPanFieldEnabled ? 1 : 0.5,
+      child: IgnorePointer(
+        ignoring: !isPanFieldEnabled,
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _panController,
+                decoration: const InputDecoration(
+                  hintText: "Enter PAN",
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Enter PINCODE
-                      // Enter PINCODE
-                      const Text(
-                        "Enter PINCODE",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Consumer<PinCodeProvider>(
-                        builder: (context, provider, _) {
-                          final response = provider.pinCodeResponse;
-                          final isServiceable =
-                              response?.data.serviceable == true;
-
-                          final buttonColor =
-                              response == null
-                                  ? Colors.black
-                                  : (isServiceable
-                                      ? Colors.green
-                                      : Colors.pink);
-
-                          return Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _pinController,
-                                  enabled: !isServiceable,
-                                  decoration: const InputDecoration(
-                                    hintText: "Enter PINCODE",
-                                    border: OutlineInputBorder(),
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                    ),
-                                  ),
-                                  keyboardType: TextInputType.number,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              SizedBox(
-                                height: 48,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: buttonColor,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    final pin = _pinController.text.trim();
-                                    if (pin.length == 6 &&
-                                        int.tryParse(pin) != null) {
-                                      Provider.of<PinCodeProvider>(
-                                        context,
-                                        listen: false,
-                                      ).checkPincodeServiceable(pin);
-                                    } else {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Please enter a valid 6-digit PIN code.',
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  child: const Text("CHECK"),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _panController,
-                              decoration: const InputDecoration(
-                                hintText: "Enter PAN",
-                                border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
-                              ),
-                              keyboardType: TextInputType.text,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          SizedBox(
-                            height: 48,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                              ),
-                              onPressed: () {
-                                // TODO: Add PAN verify logic
-                                Provider.of<PanVerificationProvider>(
-                                  context,
-                                  listen: false,
-                                ).verifyPan(
-                                  name: 'PUJA KUMARI',
-                                  pan: _panController.text ?? 'AKTPY4340E',
-                                );
-                              },
-                              child: const Text("VERIFY"),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                keyboardType: TextInputType.text,
+                textCapitalization: TextCapitalization.characters,
+                onChanged: (_) => setState(() {}),
+              ),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      panResponse == null
+                          ? Colors.black
+                          : (isPanSuccess ? Colors.green : Colors.pink),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
                   ),
                 ),
+                onPressed: () async {
+                  final pan = _panController.text.trim().toUpperCase();
+                  if (pan.length == 10) {
+                    await panProvider.verifyPan(
+                      name: 'PUJA KUMARI', // Replace with dynamic name
+                      pan: pan,
+                    );
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please enter valid PAN')),
+                    );
+                  }
+                },
+                child: const Text("VERIFY"),
               ),
-              const SizedBox(height: 32),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-              // Cancel & Proceed buttons outside the card, centered
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(
+  Widget _buildActionButtons(BuildContext context, bool canProceed) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text("CANCEL", style: TextStyle(color: Colors.black)),
+        ),
+        const SizedBox(width: 10),
+        SizedBox(
+          height: 48,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: canProceed ? Colors.black : Colors.grey,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+            onPressed:
+                canProceed
+                    ? () {
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                           builder:
@@ -192,47 +237,12 @@ class _MMTC_PinScreenState extends State<MMTC_PinScreen> {
                                   BuyGoldScreen(goldPrice: widget.goldPrice),
                         ),
                       );
-                    },
-                    child: const Text(
-                      "CANCEL",
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  SizedBox(
-                    height: 48,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                      onPressed: () {
-                        // TODO: Add proceed logic
-                        if (_pinController.text.isNotEmpty &&
-                            _panController.text.isNotEmpty) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => BuyGoldScreen(
-                                    goldPrice: widget.goldPrice,
-                                  ),
-                            ),
-                          );
-                        }
-                      },
-                      child: const Text("PROCEED"),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                    }
+                    : null,
+            child: const Text("PROCEED"),
           ),
         ),
-      ),
+      ],
     );
   }
 }

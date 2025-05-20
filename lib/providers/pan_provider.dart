@@ -6,7 +6,7 @@ import 'package:iostest/config/secure_storage_service.dart';
 import 'package:iostest/models/pan_moder.dart';
 
 class PanVerificationProvider with ChangeNotifier {
-  PanInfoResponse? panInfo;
+  PanVerifyResponse? panInfo;
   bool isLoading = false;
   String? error;
 
@@ -34,7 +34,14 @@ class PanVerificationProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
-        panInfo = PanInfoResponse.fromJson(jsonResponse);
+        print('Raw JSON success: ${jsonResponse['success']} (${jsonResponse['success'].runtimeType})');
+
+        panInfo = PanVerifyResponse.fromJson(jsonResponse);
+
+        // Debug log
+        print('isPanSuccess: ${panInfo?.success}');
+        print('isPanMessage: ${panInfo?.message}');
+        print('isPanPAN: ${panInfo?.data?.pan}');
       } else {
         error = 'Failed: ${response.statusCode}';
       }
