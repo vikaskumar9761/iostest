@@ -216,7 +216,7 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
                 : TabBarView(
                   children:
                       browsePlans.map((browsePlan) {
-                        final currentTabPlans =
+                        List<Plan> currentTabPlans =
                             browsePlan.planId == "1"
                                 ? plans
                                 : plans
@@ -227,10 +227,19 @@ class _SelectPlansScreenState extends State<SelectPlansScreen> {
                                     )
                                     .toList();
 
-                        final filteredPlans = filterPlans(
+                        List<Plan> filteredPlans = filterPlans(
                           currentTabPlans,
                           query,
                         );
+
+                        // If current tab has no plans and user is searching, fallback to "All" tab
+                        if (filteredPlans.isEmpty && query.isNotEmpty) {
+                          filteredPlans = filterPlans(
+                            plans,
+                            query,
+                          ); // search in all plans
+                        }
+
                         return buildPlansList(filteredPlans);
                       }).toList(),
                 ),
