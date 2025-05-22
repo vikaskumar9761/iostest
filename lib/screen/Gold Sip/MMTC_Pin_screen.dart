@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iostest/providers/mmtc_profile_provider.dart';
 import 'package:iostest/providers/pan_provider.dart';
 import 'package:iostest/providers/pin_code_provider.dart';
 import 'package:iostest/screen/Gold%20Sip/buy_gold_screen.dart';
@@ -18,6 +19,42 @@ class _MMTC_PinScreenState extends State<MMTC_PinScreen> {
 
   bool isPanFieldEnabled = false;
 
+  // ✅ Reusable dialog method
+  void showResultDialog({
+    required String title,
+    required String message,
+    required bool isSuccess,
+  }) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); 
+                Navigator.of(context).pop(); // Close dialog
+                if (isSuccess) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) =>
+                              BuyGoldScreen(goldPrice: widget.goldPrice),
+                    ),
+                  );
+                }
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final pinProvider = Provider.of<PinCodeProvider>(context);
@@ -26,13 +63,8 @@ class _MMTC_PinScreenState extends State<MMTC_PinScreen> {
     final isPinSuccess = pinProvider.pinCodeResponse?.success == true;
     final isPanSuccess = panProvider.panInfo?.success == true;
 
-    // Enable PAN field only after successful PIN
     isPanFieldEnabled = isPinSuccess;
-    print("ispinsuccess${isPanSuccess}");
-
     final bool canProceed = isPinSuccess && isPanSuccess;
-
-    print("canproceed${canProceed}");
 
     return Scaffold(
       appBar: AppBar(
@@ -76,7 +108,7 @@ class _MMTC_PinScreenState extends State<MMTC_PinScreen> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 8),
-            _buildPinField(pinProvider, isPinSuccess),
+            _buildPinField(pinProvider),
             const SizedBox(height: 16),
             _buildPanField(panProvider, isPanSuccess),
           ],
@@ -85,9 +117,7 @@ class _MMTC_PinScreenState extends State<MMTC_PinScreen> {
     );
   }
 
-  Widget _buildPinField(PinCodeProvider pinProvider, bool isPinSuccess) {
-    final pinResponse = pinProvider.pinCodeResponse;
-
+  Widget _buildPinField(PinCodeProvider pinProvider) {
     return Row(
       children: [
         Expanded(
@@ -108,9 +138,11 @@ class _MMTC_PinScreenState extends State<MMTC_PinScreen> {
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor:
-                  pinResponse == null
+                  pinProvider.pinCodeResponse == null
                       ? Colors.black
-                      : (isPinSuccess ? Colors.green : Colors.pink),
+                      : (pinProvider.pinCodeResponse!.data?.serviceable == true
+                          ? Colors.green
+                          : Colors.red),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(5),
@@ -118,20 +150,58 @@ class _MMTC_PinScreenState extends State<MMTC_PinScreen> {
             ),
             onPressed: () async {
               final pin = _pinController.text.trim();
+
               if (pin.length == 6 && int.tryParse(pin) != null) {
                 await pinProvider.checkPincodeServiceable(pin);
+
+                final response = pinProvider.pinCodeResponse;
+
+                if (response == null) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Failed to fetch data. Please try again.',
+                        ),
+                        backgroundColor: Colors.red,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                  return;
+                }
+
+                final bool isServiceable = response.data?.serviceable == true;
+
                 if (mounted) {
                   setState(() {
-                    isPanFieldEnabled =
-                        pinProvider.pinCodeResponse?.success == true;
+                    isPanFieldEnabled = isServiceable;
                   });
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isServiceable
+                            ? "Serviceable in ${response.data?.city}, ${response.data?.state}"
+                            : (response.message ??
+                                "Service not available for this PIN"),
+                      ),
+                      backgroundColor:
+                          isServiceable ? Colors.green : Colors.red,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
                 }
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please enter a valid 6-digit PIN code.'),
-                  ),
-                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please enter a valid 6-digit PIN code.'),
+                      backgroundColor: Colors.red,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
               }
             },
             child: const Text("CHECK"),
@@ -187,9 +257,7 @@ class _MMTC_PinScreenState extends State<MMTC_PinScreen> {
                       name: 'PUJA KUMARI', // Replace with dynamic name
                       pan: pan,
                     );
-                    if (mounted) {
-                      setState(() {});
-                    }
+                    if (mounted) setState(() {});
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Please enter valid PAN')),
@@ -228,15 +296,29 @@ class _MMTC_PinScreenState extends State<MMTC_PinScreen> {
             ),
             onPressed:
                 canProceed
-                    ? () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) =>
-                                  BuyGoldScreen(goldPrice: widget.goldPrice),
-                        ),
-                      );
+                    ? () async {
+                      final createProfileProvider =
+                          Provider.of<CreateProfileProvider>(
+                            context,
+                            listen: false,
+                          );
+
+                      await createProfileProvider.createProfile();
+
+                      if (createProfileProvider.error != null) {
+                        showResultDialog(
+                          title: "Error",
+                          message: createProfileProvider.error!,
+                          isSuccess: false,
+                        );
+                      } else {
+                        showResultDialog(
+                          title: "Success",
+                          message:
+                              "${createProfileProvider.profileResponse?['message']} Profile created successfully.",
+                          isSuccess: true,
+                        );
+                      }
                     }
                     : null,
             child: const Text("PROCEED"),

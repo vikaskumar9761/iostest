@@ -7,6 +7,7 @@ import 'package:iostest/providers/flight_List_provider.dart';
 import 'package:iostest/providers/gold_profile_provider.dart';
 import 'package:iostest/providers/hotel_city_provider.dart';
 import 'package:iostest/providers/hotels_list_provider.dart';
+import 'package:iostest/providers/mmtc_profile_provider.dart';
 import 'package:iostest/providers/otp_provider.dart';
 import 'package:iostest/providers/pan_provider.dart';
 import 'package:iostest/providers/payment_status_notifier.dart';
@@ -36,7 +37,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => HotelsListProvider()),
         ChangeNotifierProvider(create: (_) => FlightListProvider()),
         ChangeNotifierProvider(create: (_) => PinCodeProvider()),
-          ChangeNotifierProvider(create: (_) => PanVerificationProvider()),
+        ChangeNotifierProvider(create: (_) => PanVerificationProvider()),
+        ChangeNotifierProvider(create: (_) => CreateProfileProvider()),
       ],
       child: const MyApp(),
     ),

@@ -16,4 +16,5 @@ class UrlConstants {
   static const String flight_City_list = '$baseUrl/flights/dom';
   static const String pincode = '$baseUrl/mmtc/isPincode/serviceable?pincode=';
   static const String panVerify = '$baseUrl/pan/verify';
+  static const String mmtc_profile='$baseUrl/mmtc/create/profile';
 }

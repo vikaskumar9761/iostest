@@ -59,7 +59,7 @@ class _BuyGoldScreenState extends State<BuyGoldScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(dialogContext); // Close the dialog first
+                  Navigator.pop(context); // Close the dialog first
                   Navigator.of(context, rootNavigator: true).pushReplacement(
                     MaterialPageRoute(
                       builder:

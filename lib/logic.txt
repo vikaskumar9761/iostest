@@ -1,0 +1,88 @@
+fun handleBuyTransaction(value: String,convType:ConversionType ,responseBody: MmtcPriceQuote) {
+
+Log.d("TAG", "handleBuyTransaction: $value $convType ${responseBody.preTaxAmount} ${responseBody.tax1Perc} ${responseBody.tax2Perc} ${responseBody.tax3Amt}")
+
+        if (convType==ConversionType.GRAMS_TO_RUPEES) {
+            val quantity = BigDecimal((value).toDouble())
+                .setScale(4, RoundingMode.HALF_UP).toDouble()
+
+            val preTaxAmount = (responseBody.preTaxAmount.toDouble()) * quantity
+            val tax1Amt = roundUp((preTaxAmount * (responseBody.tax1Perc.toDouble())) / 100, 2)
+            val tax2Amt = roundUp((preTaxAmount * ( responseBody.tax2Perc.toDouble())) / 100, 2)
+            val tax3Amt = responseBody.tax3Amt as? Double ?: 0.0
+
+            val totalTaxAmount = tax1Amt + tax2Amt + tax3Amt
+            val totalAmount = preTaxAmount + totalTaxAmount
+
+
+
+            val result = mapOf(
+//                "customerRefNo" to req["customerRefNo"],
+                "calculationType" to "Q",
+                "quoteId" to responseBody.quoteId,
+                "quantity" to "%.4f".format(quantity),
+                "preTaxAmount" to "%.2f".format(preTaxAmount),
+                "totalAmount" to "%.2f".format(totalAmount),
+                "tax1Amt" to "%.2f".format(tax1Amt),
+                "tax2Amt" to "%.2f".format(tax2Amt),
+                "tax3Amt" to "%.2f".format(tax3Amt),
+                "totalTaxAmount" to "%.2f".format(totalTaxAmount),
+                "transactionDate" to getDateTime(),
+                "transactionOrderID" to mmtcQuoteResp.value?.data?.transactionRefNo
+            )
+
+            Log.d("TAG", "handleBuyTransaction: $result")
+
+
+            _uiState.value = GoldPurchaseState.AmountCalculated(
+                amount = result["totalAmount"]!!.toDouble()!!,
+                goldInGms = quantity,
+                conversionType = ConversionType.RUPEES_TO_GRAMS,
+                provider = GoldProvider.SAFEGOLD
+            )
+
+            mmtcData.postValue(result as Map<String,String>)
+            //println(JSON.stringify(result))
+        } else {
+            val preTaxAmount = (value).toDouble()
+            val quantity = BigDecimal(preTaxAmount / (responseBody.preTaxAmount.toDouble()))
+                .setScale(4, RoundingMode.HALF_UP).toDouble()
+
+            val tax1Amt = roundUp(preTaxAmount * (responseBody.tax1Perc.toDouble() ) / 100, 2)
+            val tax2Amt = roundUp(preTaxAmount * (responseBody.tax2Perc.toDouble()  ) / 100, 2)
+
+            var tax3Amt =0.0;
+            if (responseBody.tax3Amt != null) {
+                tax3Amt = responseBody.tax3Amt.toDouble() as Double
+            }
+
+            val totalTaxAmount = tax1Amt + tax2Amt + tax3Amt
+            val totalAmount = preTaxAmount + totalTaxAmount
+
+
+            _uiState.value = GoldPurchaseState.AmountCalculated(
+                amount = totalAmount,
+                goldInGms = quantity,
+                conversionType = ConversionType.RUPEES_TO_GRAMS,
+                provider = GoldProvider.SAFEGOLD
+            )
+
+            val result = mapOf(
+//                "customerRefNo" to req["customerRefNo"],
+                "calculationType" to "A",
+                "quoteId" to responseBody.quoteId,
+                "quantity" to "%.4f".format(quantity),
+                "preTaxAmount" to "%.2f".format(preTaxAmount),
+                "totalAmount" to "%.2f".format(totalAmount),
+                "tax1Amt" to "%.2f".format(tax1Amt),
+                "tax2Amt" to "%.2f".format(tax2Amt),
+                "tax3Amt" to "%.2f".format(tax3Amt),
+                "totalTaxAmount" to "%.2f".format(totalTaxAmount),
+                "transactionDate" to getDateTime(),
+                "transactionOrderID" to mmtcQuoteResp.value?.data?.transactionRefNo
+            )
+            //println(JSON.stringify(result))
+            mmtcData.postValue(result as Map<String,String>)
+
+        }
+    }
